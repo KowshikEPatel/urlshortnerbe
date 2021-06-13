@@ -30,6 +30,7 @@ app.post("/newuser",async (req,res)=>{
     
     bcrypt.genSalt(11,(err,salt)=>{
         bcrypt.hash(req.body["password"],salt, async (err,hash)=>{
+            console.log(req.body)
             const client = await mongoclient.connect(dbURL, {useNewUrlParser: true, useUnifiedTopology: true})
             let db = client.db('projecturlshort')
             let data = await db.collection("user").insertOne({
@@ -43,12 +44,13 @@ app.post("/newuser",async (req,res)=>{
                     "randomString":""
                                 },
             })
+            console.log(data['ops'][0]['username'])
             const msg = {
                 to: data['ops'][0]['username'], // Change to your recipient
                 from: 'kowshikerappajipatel@gmail.com', // Change to your verified sender
-                subject: 'Sending with SendGrid is Fun',
-                text: 'and easy to do anywhere, even with Node.js',
-                html: '<strong>and easy to do anywhere, even with Node.js</strong>',
+                subject: 'microURL account validation',
+                text: '',
+                html: `<p>Hi ${data['ops'][0]['firstName']}, \n You had recently registered for microURL service.Click on the below button to activate your account and make your life hassle free with URLs </p>\n<button>Activate account</button>`
               }
               sgMail
                 .send(msg)
@@ -67,5 +69,5 @@ app.post("/newuser",async (req,res)=>{
 })
 
 
-app.listen(port,()=>{console.log("server started at port" + port)})
+app.listen(port,()=>{console.log("server started at port " + port)})
 
