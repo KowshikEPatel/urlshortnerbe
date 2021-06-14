@@ -7,6 +7,7 @@ const jwt = require('jsonwebtoken')
 const randomstring = require('randomstring')
 const nodemailer = require('nodemailer')
 
+
 const mongoclient = mongodb.MongoClient;
 const objectid = mongodb.ObjectID
 const port = process.env.PORT
@@ -28,7 +29,7 @@ app.get('/useractivate/:id', async (req,res)=>{
   
       const client = await mongoclient.connect(dbURL, {useNewUrlParser: true, useUnifiedTopology: true})
       let db = client.db('projecturlshort')
-      let user = await db.collection('user').findOneAndUpdate({"_id":req.params.id},{$set:{'isActive':true}})
+      let user = await db.collection('user').findOneAndUpdate({"_id":objectid(req.params.id)},{$set:{'isActive':true}})
       console.log(user)
       res.redirect('https://friendly-feynman-57301c.netlify.app/useractivated') 
 })
