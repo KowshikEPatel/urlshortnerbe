@@ -82,7 +82,7 @@ app.post('/forgotpw', async (req,res)=>{
     const client = await mongoclient.connect(dbURL, {useNewUrlParser: true, useUnifiedTopology: true})
     let db = client.db('projecturlshort')
     let data = await db.collection("user").findOne(req.body)
-
+    console.log(data)
     let transporter = nodemailer.createTransport({ 
       host: "smtp.ethereal.email",
       port: 587,
@@ -96,6 +96,7 @@ app.post('/forgotpw', async (req,res)=>{
     console.log(req.body)
     let randomURL = `https://friendly-feynman-57301c.netlify.app/resetpassword/`+key
     let stored  = await db.collection('user').findOneAndUpdate(req.body,{$set:{"passwordReset":{"hasRequestedReset":true, "randomString":key}}})
+    console.log(stored)
     let info = await transporter.sendMail({
         from: '"felicia24@ethereal.email" <felicia24@ethereal.email>', 
         to:  data["username"], 
