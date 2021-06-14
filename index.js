@@ -116,7 +116,7 @@ app.post("/resetpassword/:str",async(req,res)=>{
       }
       bcrypt.hash(req.body["password"],salt, async (err,hash)=>{
 
-          let user = await db.collection("user").findOneAndUpdate({"randomString":req.params.str},{$set:{"password":hash}})
+          let user = await db.collection("user").findOneAndUpdate({"passwordReset":{"hasRequestedReset":true,"randomString":req.params.str}},{$set:{"password":hash}})
           res.status(200).json({"str":req.params.str,"user":user})
       })})
   client.close()
