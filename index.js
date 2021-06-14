@@ -36,7 +36,7 @@ app.post("/newuser",async (req,res)=>{
     
     bcrypt.genSalt(11,(err,salt)=>{
         bcrypt.hash(req.body["password"],salt, async (err,hash)=>{
-            console.log(req.body)
+            
             const client = await mongoclient.connect(dbURL, {useNewUrlParser: true, useUnifiedTopology: true})
             let db = client.db('projecturlshort')
             let data = await db.collection("user").insertOne({
@@ -52,29 +52,25 @@ app.post("/newuser",async (req,res)=>{
             })
             
             let transporter = nodemailer.createTransport({
-              service:'gmail',
-              auth:{ 
-                user:process.env.EMAIL,
-                pass:process.env.PASSWORD
-              }
+              host: "smtp.ethereal.email",
+              port: 587,
+              secure: false, // true for 465, false for other ports
+              auth: {
+                        user: process.env.EMAIL, // generated ethereal user
+                        pass: process.env.PASSWORD, // generated ethereal password
+                    },
             });
-
-            let mailOptions = {
-              to: data['ops'][0]['username'],
-              from :'mahesh',
-              subject: 'microURL account validation',
-              text: '',
-              html: `<p>Hi ${data['ops'][0]['firstName']}, \n You had recently registered for microURL service.Click on the below button to activate your account and make your life hassle free with URLs </p>\n <a href='https://kp-microurl.herokuapp.com/useractivate/${data['ops'][0]['_id']}'><button >Activate account</button>`
-            }
-            transporter.sendMail(mailOptions)
-            .then((response)=>{
-              console.log(response)
-              res.status(200).json({data,response})
-            })
-            .catch(err=>{console.log(err)})
             
+            let info = await transporter.sendMail({
+              from: process.env.EMAIL, // sender address
+              to: data['ops'][0]['username'], // list of receivers
+              subject: "Hello ✔", // Subject line
+              text: "Hello world?", // plain text body
+              html: `<b>Click on the following button to activate your account</b><a href = 'https://kp-microurl.herokuapp.com/useractivate/${data['ops'][0]['username']}'><button>Activate account</button></a>`, // html body
+            });
+          
             
-            
+            res.status(200).json({data,"message":info.messageId})
             client.close()
         })
     })
