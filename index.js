@@ -77,6 +77,34 @@ app.post("/newuser",async (req,res)=>{
     
 })
 
+app.post('/forgotpw', async (req,res)=>{
+    const client = await mongoclient.connect(dbURL, {useNewUrlParser: true, useUnifiedTopology: true})
+    let db = client.db('projecturlshort')
+    let data = await db.collection("user").findOne(req.body)
+
+    let transporter = nodemailer.createTransport({ 
+      host: "smtp.ethereal.email",
+      port: 587,
+      secure: false, // true for 465, false for other ports
+      auth: {
+              user: process.env.EMAIL, // generated ethereal user
+              pass: process.env.PASSWORD, // generated ethereal password
+            },
+        });
+    let key = randomstring.generate()
+    let randomURL = `https://friendly-feynman-57301c.netlify.app/resetpassword/`+key
+    let stored  = await db.collection('user').findOneAndUpdate(req.body,{$set:{"passwordReset":{"hasRequestedReset":true, "randomString":key}}})
+    let info = await transporter.sendMail({
+        from: '"felicia24@ethereal.email" <felicia24@ethereal.email>', 
+        to:  data["username"], 
+        subject: "Password reset string", // Subject line
+        html: `<p>Hi ${data["firstName"]}, you have requested for resetting your password on onlogger.com. Click on the 
+                <a href="${randomURL}">link</a> to reset your password </p> `, // html body
+    });
+    res.status(200).json({info,stored,key})
+
+})
+
 
 app.listen(port,()=>{console.log("server started at port " + port)})
 
