@@ -30,7 +30,6 @@ app.get('/useractivate/:id', async (req,res)=>{
       const client = await mongoclient.connect(dbURL, {useNewUrlParser: true, useUnifiedTopology: true})
       let db = client.db('projecturlshort')
       let user = await db.collection('user').findOneAndUpdate({"_id":objectid(req.params.id)},{$set:{'isActive':true}})
-      console.log(user)
       res.redirect('https://friendly-feynman-57301c.netlify.app/useractivated') 
 })
 
@@ -94,6 +93,7 @@ app.post('/forgotpw', async (req,res)=>{
             },
         });
     let key = randomstring.generate()
+    console.log(req.body)
     let randomURL = `https://friendly-feynman-57301c.netlify.app/resetpassword/`+key
     let stored  = await db.collection('user').findOneAndUpdate(req.body,{$set:{"passwordReset":{"hasRequestedReset":true, "randomString":key}}})
     let info = await transporter.sendMail({
