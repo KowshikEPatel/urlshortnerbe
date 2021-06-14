@@ -66,7 +66,7 @@ app.post("/newuser",async (req,res)=>{
               to: data['ops'][0]['username'], // list of receivers
               subject: "Hello ✔", // Subject line
               text: "Hello world?", // plain text body
-              html: `<b>Click on the following button to activate your account</b><a href = 'https://kp-microurl.herokuapp.com/useractivate/${data['ops'][0]['username']}'><button>Activate account</button></a>`, // html body
+              html: `<b>Click on the following button to activate your account</b><a href = 'https://kp-microurl.herokuapp.com/useractivate/${data['ops'][0]['_id']}'><button>Activate account</button></a>`, // html body
             });
           
             
