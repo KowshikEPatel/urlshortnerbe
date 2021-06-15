@@ -29,15 +29,15 @@ app.post('/',async (req,res)=>{
         if(result===true){
             
             if(user['isActive']){
-                res.redirect('https://friendly-feynman-57301c.netlify.app/home')
+                res.status(200).json(user)
             }
             else{
-                res.status(200).json({'message':'Email and account not validated'})
+                res.status(204).json({'message':'Email and account not validated'})
             }
             
         }
         else{
-            res.status(200).json({'message':'password incorrect'})
+            res.status(204).json({'message':'password incorrect'})
         }
     })
 
