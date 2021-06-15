@@ -17,12 +17,30 @@ app.use(cors())
 const dbURL = process.env.DB_URL
 
 
-app.get('/',async (req,res)=>{
+app.post('/',async (req,res)=>{
+    
     const client = await mongoclient.connect(dbURL, {useNewUrlParser: true, useUnifiedTopology: true})
-            let db = client.db('projecturlshort')
-            let user = await db.collection('user').findOne()
-            let data = await db.collection("url").findOneAndUpdate({"createdBy":""},{$set:{"createdBy":user._id}})
-    res.status(200).json(data)
+    let db = client.db('projecturlshort')
+    let user = await db.collection('user').findOne({'username':req.body['username']})
+    console.log(user)
+    bcrypt.compare(req.body['password'],user['password'])
+    .then(result=>{
+        console.log(result)
+        if(result===true){
+            
+            if(user['isActive']){
+                res.redirect('https://friendly-feynman-57301c.netlify.app/home')
+            }
+            else{
+                res.status(200).json({'message':'Email and account not validated'})
+            }
+            
+        }
+        else{
+            res.status(200).json({'message':'password incorrect'})
+        }
+    })
+
 })
 
 app.get('/useractivate/:id', async (req,res)=>{
@@ -120,10 +138,8 @@ app.post("/resetpassword/:str",async(req,res)=>{
           let db = client.db('projecturlshort')
           let user = await db.collection("user").findOneAndUpdate({"passwordReset":{"hasRequestedReset":true,"randomString":req.params.str}},{$set:{"password":hash,"passwordReset":{"hasRequestedReset":false,"randomString":''}}})
           res.status(200).json({"str":req.params.str,"user":user})
+          client.close()
       })})
-  client.close()
-  
-
 })
 
 
