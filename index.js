@@ -43,6 +43,12 @@ app.post('/',async (req,res)=>{
 
 })
 
+//do remove the redirects function below
+app.post('/redirects',(req,res)=>{
+    res.redirect('https://applecolors.com/')
+})
+//do remove the redirects function below
+
 app.get('/useractivate/:id', async (req,res)=>{
   
       const client = await mongoclient.connect(dbURL, {useNewUrlParser: true, useUnifiedTopology: true})
