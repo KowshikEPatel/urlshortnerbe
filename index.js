@@ -64,7 +64,7 @@ app.get('/u/:randomString', async (req,res)=>{
     const client  = await mongoclient.connect(dbURL, {useNewUrlParser: true, useUnifiedTopology: true})
     let db = client.db('projecturlshort')
     let currentTime = Date()
-    let user = await db.collection('url').findOneAndUpdate({'urlString':req.params.randomString},{$push:{'clickArray':currentTime}})
+    let user = await db.collection('url').findOneAndUpdate({'urlString':`https://kp-microurl.herokuapp.com/u/`+req.params.randomString},{$push:{'clickArray':currentTime}})
     console.log(user)
     res.status(200)
 
