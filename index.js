@@ -65,7 +65,7 @@ app.get('/u/:randomString', async (req,res)=>{
     let db = client.db('projecturlshort')
     let currentTime = Date()
     let user = await db.collection('url').findOneAndUpdate({'urlString':req.params.randomString},{$push:{'clickArray':currentTime}})
-    console.log(user['ops']['0']['actualURL'])
+    console.log(user)
     res.status(200)
 
 })
