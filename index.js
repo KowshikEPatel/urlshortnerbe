@@ -44,7 +44,7 @@ app.post('/',async (req,res)=>{
 })
 
 //do remove the redirects function below
-app.post('/redirects',(req,res)=>{
+app.get('/redirects',(req,res)=>{
     res.redirect('https://applecolors.com/')
 })
 //do remove the redirects function below
