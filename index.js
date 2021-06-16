@@ -49,13 +49,13 @@ app.post('/addurl',async (req,res)=>{
     let microurl = `https://kp-microurl.herokuapp.com/u/` + randomstr
     const client  = await mongoclient.connect(dbURL, {useNewUrlParser: true, useUnifiedTopology: true})
     let db = client.db('projecturlshort')
-    let user = await db.collection('url').insertOne({
+    let dbresponse = await db.collection('url').insertOne({
         'urlString': microurl,
         "actualURL" : req.body['url'], 
         'createdBy': objectid(req.body['_id']),
         'clickArray':[]
     })
-    res.status(200).json({user,'url':user['ops'][0]['urlString']})
+    res.status(200).json({dbresponse,'url':dbresponse['ops'][0]['urlString']})
     client.close()
 })
 
@@ -63,7 +63,7 @@ app.get('/u/:randomString', async (req,res)=>{
 
     const client  = await mongoclient.connect(dbURL, {useNewUrlParser: true, useUnifiedTopology: true})
     let db = client.db('projecturlshort')
-    let currentTime = Date()
+    let currentTime = new Date().toLocaleString();
     let user = await db.collection('url').findOneAndUpdate({'urlString':`https://kp-microurl.herokuapp.com/u/`+req.params.randomString},{$push:{'clickArray':currentTime}})
     console.log(user)
     console.log(user.value['actualURL'])
