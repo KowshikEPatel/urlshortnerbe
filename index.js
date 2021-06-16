@@ -43,11 +43,32 @@ app.post('/',async (req,res)=>{
 
 })
 
-//do remove the redirects function below
-app.get('/redirects',(req,res)=>{
-    res.redirect('https://applecolors.com/')
+app.post('/addurl',async (req,res)=>{
+
+    let randomstr = randomstring.generate(7);
+    let microurl = `https://kp-microurl.herokuapp.com/u/` + randomstr
+    const client  = await mongoclient.connect(dbURL, {useNewUrlParser: true, useUnifiedTopology: true})
+    let db = client.db('projecturlshort')
+    let user = await db.collection('url').insertOne({
+        'urlString': microurl,
+        "actualURL" : req.body['url'], 
+        'createdBy': objectid(req.body['_id']),
+        'clickArray':[]
+    })
+    res.status(200).json({user,'url':user['ops'][0]['urlString']})
+    client.close()
 })
-//do remove the redirects function below
+
+app.get('/u/:randomString', async (req,res)=>{
+
+    const client  = await mongoclient.connect(dbURL, {useNewUrlParser: true, useUnifiedTopology: true})
+    let db = client.db('projecturlshort')
+    let currentTime = Date()
+    let user = await db.collection('url').findOneAndUpdate({'urlString':req.params.randomString},{$push:{'clickArray':currentTime}})
+    console.log(user['ops']['0']['actualURL'])
+    res.status(200)
+
+})
 
 app.get('/useractivate/:id', async (req,res)=>{
   
