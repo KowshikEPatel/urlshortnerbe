@@ -29,15 +29,15 @@ app.post('/',async (req,res)=>{
         if(result===true){
             
             if(user['isActive']){
-                res.status(200).json(user)
+                res.status(200).json({state:true,'message':'Email and account not validated',user})
             }
             else{
-                res.status(204).json({'message':'Email and account not validated'})
+                res.status(200).json({state:false,'message':'Email and account not validated'})
             }
             
         }
         else{
-            res.status(204).json({'message':'password incorrect'})
+            res.status(200).json({state:false,'message':'password incorrect'})
         }
     })
 
