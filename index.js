@@ -76,6 +76,8 @@ app.get('/u/:randomString', async (req,res)=>{
     else{
         currentUrl['clickArray'][currentTime.slice(0,9)]+= 1;
     }
+    console.log(currentUrl)
+    console.log(currentUrl['clickArray'])
     let user = await db.collection('url').update({'urlString':`https://kp-microurl.herokuapp.com/u/`+req.params.randomString},{$set:{'clickArray':currentTime['clickArray']}})
     
     console.log(user)
