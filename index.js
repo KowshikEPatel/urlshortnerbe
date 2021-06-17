@@ -68,6 +68,8 @@ app.get('/u/:randomString', async (req,res)=>{
     let currentTime = new Date().toLocaleString();
 
     let currentUrl = await db.collection('url').findOne({'urlString':`https://kp-microurl.herokuapp.com/u/`+req.params.randomString})
+    console.log(currentUrl)
+    console.log(currentUrl['clickArray'])
     if(currentUrl['clickArray'][currentTime.slice(0,9)]===undefined){
         currentUrl['clickArray'][currentTime.slice(0,9)] = 1;
     }
