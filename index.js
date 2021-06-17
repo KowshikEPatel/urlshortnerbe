@@ -69,7 +69,7 @@ app.get('/u/:randomString', async (req,res)=>{
 
     let currentUrl = await db.collection('url').findOne({'urlString':`https://kp-microurl.herokuapp.com/u/`+req.params.randomString})
     console.log(currentUrl)
-    console.log(currentUrl['clickArray'])
+    
     if(currentUrl['clickArray'][currentTime.slice(0,9)]===undefined){
         currentUrl['clickArray'][currentTime.slice(0,9)] = 1;
     }
@@ -78,8 +78,7 @@ app.get('/u/:randomString', async (req,res)=>{
     }
     console.log(currentUrl)
     console.log(currentUrl['clickArray'])
-    let urlResponse = await db.collection('url').updateOne({'urlString':`https://kp-microurl.herokuapp.com/u/`+req.params.randomString},{$set:{'clickArray':currentTime['clickArray']}})
-    
+    let urlResponse = await db.collection('url').findOneAndUpdate({'urlString':`https://kp-microurl.herokuapp.com/u/`+req.params.randomString},{$set:{'clickArray':currentUrl['clickArray']}})
     console.log(urlResponse)
     res.redirect(currentUrl['actualURL'])
 
