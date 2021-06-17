@@ -77,7 +77,7 @@ app.get('/u/:randomString', async (req,res)=>{
     let user = await db.collection('url').update({'urlString':`https://kp-microurl.herokuapp.com/u/`+req.params.randomString},{$set:{'clickArray':currentTime['clickArray']}})
     
     console.log(user)
-    res.redirect(user.value['actualURL'])
+    res.redirect(currentUrl.value['actualURL'])
 
 })
 
