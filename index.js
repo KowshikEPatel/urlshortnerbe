@@ -22,7 +22,7 @@ app.post('/',async (req,res)=>{
     const client = await mongoclient.connect(dbURL, {useNewUrlParser: true, useUnifiedTopology: true})
     let db = client.db('projecturlshort')
     let user = await db.collection('user').findOne({'username':req.body['username']})
-    console.log(user)
+    
     bcrypt.compare(req.body['password'],user['password'])
     .then(result=>{
         console.log(result)
@@ -53,7 +53,7 @@ app.post('/addurl',async (req,res)=>{
         'urlString': microurl,
         "actualURL" : req.body['url'], 
         'createdBy': objectid(req.body['_id']),
-        'clickArray':[]
+        'clickArray':{}
     })
     res.status(200).json({dbresponse,'url':dbresponse['ops'][0]['urlString']})
     client.close()
@@ -62,11 +62,20 @@ app.post('/addurl',async (req,res)=>{
 app.get('/u/:randomString', async (req,res)=>{
 
     const client  = await mongoclient.connect(dbURL, {useNewUrlParser: true, useUnifiedTopology: true})
+    console.log(performance.now())
     let db = client.db('projecturlshort')
     let currentTime = new Date().toLocaleString();
-    let user = await db.collection('url').findOneAndUpdate({'urlString':`https://kp-microurl.herokuapp.com/u/`+req.params.randomString},{$push:{'clickArray':currentTime}})
+
+    let currentUrl = await db.collection('url').findOne({'urlString':`https://kp-microurl.herokuapp.com/u/`+req.params.randomString})
+    if(currentUrl['clickArray'][currentTime.slice(0,9)]===undefined){
+        currentUrl['clickArray'][currentTime.slice(0,9)] = 1;
+    }
+    else{
+        currentUrl['clickArray'][currentTime.slice(0,9)]+= 1;
+    }
+    let user = await db.collection('url').update({'urlString':`https://kp-microurl.herokuapp.com/u/`+req.params.randomString},{$set:{'clickArray':currentTime['clickArray']}})
+    
     console.log(user)
-    console.log(user.value['actualURL'])
     res.redirect(user.value['actualURL'])
 
 })
