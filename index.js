@@ -76,6 +76,7 @@ app.get('/u/:randomString', async (req,res)=>{
     let urlResponse = await db.collection('url').findOneAndUpdate({'urlString':`https://kp-microurl.herokuapp.com/u/`+req.params.randomString},{$set:{'clickArray':currentUrl['clickArray']}})
     console.log(urlResponse)
     res.redirect(currentUrl['actualURL'])
+    client.close()
 
 })
 
@@ -83,10 +84,11 @@ app.post('/userdata', async (req,res)=>{
 
     const client  = await mongoclient.connect(dbURL, {useNewUrlParser: true, useUnifiedTopology: true})
     let db = client.db('projecturlshort')
-    let currentUrl = await db.collection('url').find({'createdBy':objectid(req.body['_id'])})
+    let currentUrl = await db.collection('url').find({'createdBy':objectid(req.body['_id'])}).toArray()
 
     console.log(currentUrl)
     res.status(200).json(currentUrl)
+    client.close()
 })
 
 app.get('/useractivate/:id', async (req,res)=>{
@@ -146,7 +148,7 @@ app.post('/forgotpw', async (req,res)=>{
     const client = await mongoclient.connect(dbURL, {useNewUrlParser: true, useUnifiedTopology: true})
     let db = client.db('projecturlshort')
     let data = await db.collection("user").findOne(req.body)
-    console.log(data)
+   
     let transporter = nodemailer.createTransport({ 
       host: "smtp.ethereal.email",
       port: 587,
@@ -157,10 +159,9 @@ app.post('/forgotpw', async (req,res)=>{
             },
         });
     let key = randomstring.generate()
-    console.log(req.body)
+    
     let randomURL = `https://friendly-feynman-57301c.netlify.app/resetpassword/`+key
     let stored  = await db.collection('user').findOneAndUpdate(req.body,{$set:{"passwordReset":{"hasRequestedReset":true, "randomString":key}}})
-    console.log(stored)
     let info = await transporter.sendMail({
         from: '"felicia24@ethereal.email" <felicia24@ethereal.email>', 
         to:  data["username"], 
@@ -169,7 +170,7 @@ app.post('/forgotpw', async (req,res)=>{
                 <a href="${randomURL}">link</a> to reset your password </p> `, // html body
     });
     res.status(200).json({info,stored,key})
-
+    client.close()
 })
 
 app.post("/resetpassword/:str",async(req,res)=>{
