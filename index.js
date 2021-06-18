@@ -22,14 +22,15 @@ app.post('/',async (req,res)=>{
     const client = await mongoclient.connect(dbURL, {useNewUrlParser: true, useUnifiedTopology: true})
     let db = client.db('projecturlshort')
     let user = await db.collection('user').findOne({'username':req.body['username']})
-    
+    let currentUrl = await db.collection('url').find({'createdBy':objectid(user['_id'])}).toArray()
+
     bcrypt.compare(req.body['password'],user['password'])
     .then(result=>{
         console.log(result)
         if(result===true){
             
             if(user['isActive']){
-                res.status(200).json({state:true,'message':'Login success',user})
+                res.status(200).json({state:true,'message':'Login success',user,currentUrl})
             }
             else{
                 res.status(200).json({state:false,'message':'Email and account not validated'})
@@ -79,17 +80,6 @@ app.get('/u/:randomString', async (req,res)=>{
     res.redirect(currentUrl['actualURL'])
     client.close()
 
-})
-
-app.post('/userdata', async (req,res)=>{
-
-    const client  = await mongoclient.connect(dbURL, {useNewUrlParser: true, useUnifiedTopology: true})
-    let db = client.db('projecturlshort')
-    let currentUrl = await db.collection('url').find({'createdBy':objectid(req.body['_id'])}).toArray()
-
-    console.log(currentUrl)
-    res.status(200).json(currentUrl)
-    client.close()
 })
 
 app.get('/useractivate/:id', async (req,res)=>{
