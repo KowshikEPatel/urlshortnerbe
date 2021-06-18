@@ -53,7 +53,8 @@ app.post('/addurl',async (req,res)=>{
         'urlString': microurl,
         "actualURL" : req.body['url'], 
         'createdBy': objectid(req.body['_id']),
-        'clickArray':{}
+        'totalClicks':0,
+        'clickArray':{},
     })
     res.status(200).json({dbresponse,'url':dbresponse['ops'][0]['urlString']})
     client.close()
@@ -73,7 +74,7 @@ app.get('/u/:randomString', async (req,res)=>{
     else{
         currentUrl['clickArray'][currentTime.slice(0,9)]+= 1;
     }
-    let urlResponse = await db.collection('url').findOneAndUpdate({'urlString':`https://kp-microurl.herokuapp.com/u/`+req.params.randomString},{$set:{'clickArray':currentUrl['clickArray']}})
+    let urlResponse = await db.collection('url').findOneAndUpdate({'urlString':`https://kp-microurl.herokuapp.com/u/`+req.params.randomString},{$set:{'clickArray':currentUrl['clickArray']},$inc:{'totalClicks':1}})
     console.log(urlResponse)
     res.redirect(currentUrl['actualURL'])
     client.close()
