@@ -86,7 +86,7 @@ app.post('/userdata', async (req,res)=>{
     let currentUrl = await db.collection('url').find({'createdBy':objectid(req.body['_id'])})
 
     console.log(currentUrl)
-    res.status(200)
+    res.status(200).json(currentUrl)
 })
 
 app.get('/useractivate/:id', async (req,res)=>{
