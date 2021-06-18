@@ -6,7 +6,6 @@ const cors = require('cors')
 const jwt = require('jsonwebtoken')
 const randomstring = require('randomstring')
 const nodemailer = require('nodemailer')
-const {performance} = require('perf_hooks')
 
 
 const mongoclient = mongodb.MongoClient;
@@ -63,12 +62,10 @@ app.post('/addurl',async (req,res)=>{
 app.get('/u/:randomString', async (req,res)=>{
 
     const client  = await mongoclient.connect(dbURL, {useNewUrlParser: true, useUnifiedTopology: true})
-    console.log(performance.now())
+    
     let db = client.db('projecturlshort')
     let currentTime = new Date().toLocaleString();
-
     let currentUrl = await db.collection('url').findOne({'urlString':`https://kp-microurl.herokuapp.com/u/`+req.params.randomString})
-    console.log(currentUrl)
     
     if(currentUrl['clickArray'][currentTime.slice(0,9)]===undefined){
         currentUrl['clickArray'][currentTime.slice(0,9)] = 1;
@@ -76,12 +73,20 @@ app.get('/u/:randomString', async (req,res)=>{
     else{
         currentUrl['clickArray'][currentTime.slice(0,9)]+= 1;
     }
-    console.log(currentUrl)
-    console.log(currentUrl['clickArray'])
     let urlResponse = await db.collection('url').findOneAndUpdate({'urlString':`https://kp-microurl.herokuapp.com/u/`+req.params.randomString},{$set:{'clickArray':currentUrl['clickArray']}})
     console.log(urlResponse)
     res.redirect(currentUrl['actualURL'])
 
+})
+
+app.post('/userdata', async (req,res)=>{
+
+    const client  = await mongoclient.connect(dbURL, {useNewUrlParser: true, useUnifiedTopology: true})
+    let db = client.db('projecturlshort')
+    let currentUrl = await db.collection('url').find({'createdBy':objectid(req.body['_id'])})
+
+    console.log(currentUrl)
+    res.status(200)
 })
 
 app.get('/useractivate/:id', async (req,res)=>{
