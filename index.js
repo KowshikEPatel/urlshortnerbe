@@ -132,50 +132,39 @@ app.post("/newuser",async (req,res)=>{
               html: `<b>Click on the following button to activate your account</b><a href = 'https://kp-microurl.herokuapp.com/useractivate/${data['ops'][0]['_id']}'><button>Activate account</button></a>`, // html body
             });*/
 
-            sendMail()
-                .then(res =>console.log('Email sent....',res))
-                .catch(err => console.log(err))
-            
-            res.status(200).json({data})
+            const accessToken = await oAuthClient.getAccessToken()
+
+            const transport  = nodemailer.createTransport({
+                    service:'gmail',
+                    auth:{
+                            type:'OAuth2',
+                            user:'kowshikerappajipatel@gmail.com',
+                            clientId:CLIENT_ID,
+                            clientSecret:CLIENT_SECRET,
+                            refreshToken:REFRESH_TOKEN,
+                            accessToken:accessToken
+                        }
+            })
+
+            const mailOptions = {
+                from: process.env.EMAIL,
+                to: data['ops'][0]['username'],
+                subject:"Hello ✔",
+                text: "Hello world?",
+                html:`<b>Click on the following button to activate your account</b><a href = 'https://kp-microurl.herokuapp.com/useractivate/${data['ops'][0]['_id']}'><button>Activate account</button></a>`, // html body
+    
+            }
+
+            const result  = await transport.sendMail(mailOptions)
+            console.log(result)
+            res.status(200).json({data,result})
             client.close()
         })
     })
     
 })
 
-async function sendMail(){
-    try {
-        const accessToken = await oAuthClient.getAccessToken()
 
-        const transport  = nodemailer.createTransport({
-            service:'gmail',
-            auth:{
-                type:'OAuth2',
-                user:'kowshikerappajipatel@gmail.com',
-                clientId:CLIENT_ID,
-                clientSecret:CLIENT_SECRET,
-                refreshToken:REFRESH_TOKEN,
-                accessToken:accessToken
-            }
-           
-        })
-        const mailOptions = {
-            from: process.env.EMAIL,
-            to: data['ops'][0]['username'],
-            subject:"Hello ✔",
-            text: "Hello world?",
-            html:`<b>Click on the following button to activate your account</b><a href = 'https://kp-microurl.herokuapp.com/useractivate/${data['ops'][0]['_id']}'><button>Activate account</button></a>`, // html body
-
-        }
-
-        const result  = await transport.sendMail(mailOptions)
-
-        return result
-
-    } catch (error) {
-        
-    }
-}
 
 app.post('/forgotpw', async (req,res)=>{
     const client = await mongoclient.connect(dbURL, {useNewUrlParser: true, useUnifiedTopology: true})
