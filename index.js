@@ -3,10 +3,9 @@ const express  =  require("express")
 const mongodb = require('mongodb')
 const bcrypt = require('bcrypt')
 const cors = require('cors')
-const jwt = require('jsonwebtoken')
 const randomstring = require('randomstring')
 const nodemailer = require('nodemailer')
-
+const { google } = require('googleapis')
 
 const mongoclient = mongodb.MongoClient;
 const objectid = mongodb.ObjectID
@@ -15,6 +14,12 @@ const app = express()
 app.use(express.json())
 app.use(cors())
 const dbURL = process.env.DB_URL
+const CLIENT_ID = process.env.CLIENT_ID
+const CLIENT_SECRET = process.env.CLIENT_SECRET
+const REDIRECT_URI = process.env.REDIRECT_URI
+const REFRESH_TOKEN = process.env.REFRESH_TOKEN
+const oAuthClient = new google.auth.OAuth2(CLIENT_ID,CLIENT_SECRET,REDIRECT_URI)
+oAuthClient.setCredentials({refresh_token:REFRESH_TOKEN})
 
 
 app.post('/',async (req,res)=>{
@@ -109,7 +114,7 @@ app.post("/newuser",async (req,res)=>{
                                 },
             })
             
-            let transporter = nodemailer.createTransport({
+            /*let transporter = nodemailer.createTransport({
               host: "smtp.ethereal.email",
               port: 587,
               secure: false, // true for 465, false for other ports
@@ -125,15 +130,52 @@ app.post("/newuser",async (req,res)=>{
               subject: "Hello ✔", // Subject line
               text: "Hello world?", // plain text body
               html: `<b>Click on the following button to activate your account</b><a href = 'https://kp-microurl.herokuapp.com/useractivate/${data['ops'][0]['_id']}'><button>Activate account</button></a>`, // html body
-            });
-          
+            });*/
+
+            sendMail()
+                .then(res =>console.log('Email sent....',res))
+                .catch(err => console.log(err))
             
-            res.status(200).json({data,"message":info.messageId})
+            res.status(200).json({data})
             client.close()
         })
     })
     
 })
+
+async function sendMail(){
+    try {
+        const accessToken = await oAuthClient.getAccessToken()
+
+        const transport  = nodemailer.createTransport({
+            service:'gmail',
+            auth:{
+                type:'OAuth2',
+                user:'kowshikerappajipatel@gmail.com',
+                clientId:CLIENT_ID,
+                clientSecret:CLIENT_SECRET,
+                refreshToken:REFRESH_TOKEN,
+                accessToken:accessToken
+            }
+           
+        })
+        const mailOptions = {
+            from: process.env.EMAIL,
+            to: data['ops'][0]['username'],
+            subject:"Hello ✔",
+            text: "Hello world?",
+            html:`<b>Click on the following button to activate your account</b><a href = 'https://kp-microurl.herokuapp.com/useractivate/${data['ops'][0]['_id']}'><button>Activate account</button></a>`, // html body
+
+        }
+
+        const result  = await transport.sendMail(mailOptions)
+
+        return result
+
+    } catch (error) {
+        
+    }
+}
 
 app.post('/forgotpw', async (req,res)=>{
     const client = await mongoclient.connect(dbURL, {useNewUrlParser: true, useUnifiedTopology: true})
