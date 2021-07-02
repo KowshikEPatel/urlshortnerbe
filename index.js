@@ -113,7 +113,7 @@ app.post("/newuser",async (req,response)=>{
                     "randomString":""
                                 },
             })
-            console.log(data)
+            
             async function sendMail(toemail,idParameter){
                 try {
                     const accessToken = await oAuthClient.getAccessToken()
@@ -135,7 +135,7 @@ app.post("/newuser",async (req,response)=>{
                         to:toemail,
                         subject:'Thank you for signing up - MicroURL',
                         text:`Hello from MicroURL. Your account is ready to use after you activate your email using the button below.`,
-                        html:`<h3>Hello from MicroURL. Your account is ready to use after you activate your email using the button <a href = 'https://kp-microurl.herokuapp.com/newuser/useractivate/${idParameter}'><button>Activate account</button></a> </h3>`
+                        html:`<h3>Hello from MicroURL. Your account is ready to use after you activate your email using the button <a href = 'https://kp-microurl.herokuapp.com/useractivate/${idParameter}'><button>Activate account</button></a> </h3>`
             
                     }
             
@@ -147,7 +147,6 @@ app.post("/newuser",async (req,response)=>{
             }
             sendMail(data['ops'][0]["username"],data['ops'][0]["_id"])
             .then(res =>{
-                console.log('Email sent....',res)
                 response.status(200).json({data,res})
             })
             .catch(err => {
