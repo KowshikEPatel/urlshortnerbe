@@ -95,7 +95,7 @@ app.get('/useractivate/:id', async (req,res)=>{
       res.redirect('https://friendly-feynman-57301c.netlify.app/useractivated') 
 })
 
-app.post("/newuser",async (req,res)=>{
+app.post("/newuser",async (req,response)=>{
     
     bcrypt.genSalt(11,(err,salt)=>{
         bcrypt.hash(req.body["password"],salt, async (err,hash)=>{
@@ -113,30 +113,14 @@ app.post("/newuser",async (req,res)=>{
                     "randomString":""
                                 },
             })
+            console.log(data)
+            async function sendMail(toemail,idParameter){
+                try {
+                    const accessToken = await oAuthClient.getAccessToken()
             
-            /*let transporter = nodemailer.createTransport({
-              host: "smtp.ethereal.email",
-              port: 587,
-              secure: false, // true for 465, false for other ports
-              auth: {
-                        user: process.env.EMAIL, // generated ethereal user
-                        pass: process.env.PASSWORD, // generated ethereal password
-                    },
-            });
-            
-            let info = await transporter.sendMail({
-              from: process.env.EMAIL, // sender address
-              to: data['ops'][0]['username'], // list of receivers
-              subject: "Hello ✔", // Subject line
-              text: "Hello world?", // plain text body
-              html: `<b>Click on the following button to activate your account</b><a href = 'https://kp-microurl.herokuapp.com/useractivate/${data['ops'][0]['_id']}'><button>Activate account</button></a>`, // html body
-            });*/
-
-            const accessToken = await oAuthClient.getAccessToken()
-
-            const transport  = nodemailer.createTransport({
-                    service:'gmail',
-                    auth:{
+                    const transport  = nodemailer.createTransport({
+                        service:'gmail',
+                        auth:{
                             type:'OAuth2',
                             user:'kowshikerappajipatel@gmail.com',
                             clientId:CLIENT_ID,
@@ -144,20 +128,32 @@ app.post("/newuser",async (req,res)=>{
                             refreshToken:REFRESH_TOKEN,
                             accessToken:accessToken
                         }
-            })
-
-            const mailOptions = {
-                from: process.env.EMAIL,
-                to: data['ops'][0]['username'],
-                subject:"Hello ✔",
-                text: "Hello world?",
-                html:`<b>Click on the following button to activate your account</b><a href = 'https://kp-microurl.herokuapp.com/useractivate/${data['ops'][0]['_id']}'><button>Activate account</button></a>`, // html body
-    
+                       
+                    })
+                    const mailOptions = {
+                        from:'<kowshikerappajipatel@gmail.com>',
+                        to:toemail,
+                        subject:'Thank you for signing up - MicroURL',
+                        text:`Hello from MicroURL. Your account is ready to use after you activate your email using the button below.`,
+                        html:`<h3>Hello from MicroURL. Your account is ready to use after you activate your email using the button <a href = 'https://kp-microurl.herokuapp.com/newuser/useractivate/${idParameter}'><button>Activate account</button></a> </h3>`
+            
+                    }
+            
+                    const result  = await transport.sendMail(mailOptions)
+                    return result
+                } catch (error) {
+                    console.log(error)
+                }
             }
-
-            const result  = await transport.sendMail(mailOptions)
-            console.log(result)
-            res.status(200).json({data,result})
+            sendMail(data['ops'][0]["username"],data['ops'][0]["_id"])
+            .then(res =>{
+                console.log('Email sent....',res)
+                response.status(200).json({data,res})
+            })
+            .catch(err => {
+                console.log(err)
+                response.status(500).json({err})
+            })   
             client.close()
         })
     })
