@@ -14,12 +14,6 @@ const app = express()
 app.use(express.json())
 app.use(cors())
 const dbURL = process.env.DB_URL
-const CLIENT_ID = process.env.CLIENT_ID
-const CLIENT_SECRET = process.env.CLIENT_SECRET
-const REDIRECT_URI = process.env.REDIRECT_URI
-const REFRESH_TOKEN = process.env.REFRESH_TOKEN
-const oAuthClient = new google.auth.OAuth2(CLIENT_ID,CLIENT_SECRET,REDIRECT_URI)
-oAuthClient.setCredentials({refresh_token:REFRESH_TOKEN})
 
 
 app.post('/',async (req,res)=>{
@@ -107,52 +101,13 @@ app.post("/newuser",async (req,response)=>{
                 "firstName":req.body['firstname'],
                 "lastName":req.body['lastname'],
                 "password":hash,
-                "isActive":false,
+                "isActive":true,
                 "passwordReset":{
                     "hasRequestedReset":false,
                     "randomString":""
                                 },
             })
-
-            async function sendMail(toemail,idParameter){
-                try {
-                    const accessToken = await oAuthClient.getAccessToken()
-
-                    const transport  = nodemailer.createTransport({
-                        service:'gmail',
-                        auth:{
-                            type:'OAuth2',
-                            user:'kowshikerappajipatel@gmail.com',
-                            clientId:CLIENT_ID,
-                            clientSecret:CLIENT_SECRET,
-                            refreshToken:REFRESH_TOKEN,
-                            accessToken:accessToken
-                        }
-
-                    })
-                    const mailOptions = {
-                        from:'<kowshikerappajipatel@gmail.com>',
-                        to:toemail,
-                        subject:'Thank you for signing up - MicroURL',
-                        text:`Hello from MicroURL. Your account is ready to use after you activate your email using the button below.`,
-                        html:`<h3>Hello from MicroURL. Your account is ready to use after you activate your email using the button <a href = 'https://kp-microurl.herokuapp.com/useractivate/${idParameter}'><button>Activate account</button></a> </h3>`
-
-                    }
-
-                    const result  = await transport.sendMail(mailOptions)
-                    return result
-                } catch (error) {
-                    console.log(error)
-                }
-            }
-            sendMail(data['ops'][0]["username"],data['ops'][0]["_id"])
-            .then(res =>{
-                response.status(200).json({data,res})
-            })
-            .catch(err => {
-                console.log(err)
-                response.status(500).json({err})
-            })
+            response.status(200).json(data);
             client.close()
         })
     })
